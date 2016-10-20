@@ -21,6 +21,8 @@ npm install --save-dev @digix/contest
 
 ## Usage
 
+**Assert method.call**
+
 ```javascript
 const contest = new Contest({ debug: true }); // `debug` defaults to false
 
@@ -46,11 +48,15 @@ describe('shorthand', function () {
   });
 });
 
-// assert multiple outputs
+// assert multiple outputs and transform outputs before asserting
 contest.assert(myContract.someMethod, 'does some things', [
   [[a, b], [c, d]], // [[param1, param2], [expectedOutput1, expectedOutput2]]
 ], [(res) => res.toNumber(), (res) => res.toString()]); // [outputTransformation1, outputTransformation2]
+```
 
+**Assert method transaction success**
+
+```javascript
 describe('transactingMethod', function() {
   // assert that a transaction doesn't mess up
   contest.assertTx(myContract.someMethod, 'does not throw; performs a transaction', [
@@ -64,16 +70,40 @@ describe('transactingMethod', function() {
 })
 ```
 
+**Assert event data** TODO
 
-## TODO Roadmap
-
-* Assert for events
-* Global re-runs (e.g. try different gas amounts on every test)
-* More features...
-* Abstract even further with batches of statements for the same method (see below)
 
 ```javascript
-// TODO assert multiple statements for method for in sequence
+describe('Event Listener', function () {
+  // define some function that returns a promise and causes events to fire
+  function eventCausingPromise () {
+    return testContract.transfer(2, USERS.owner, { from: USERS.admin })
+    .then(() => testContract.transfer(1, USERS.admin, { from: USERS.owner }));
+  }
+
+  // optional output transformation function
+  const outputTransformation = {
+    value: (res) => res.toNumber()
+  }
+
+  // assert equal
+  contest.assertEvent(testContract.RegisterEvent, 'fires when transferred', [
+    // array  of object you pass to `assertEvent` or `throwEvent` will be asserted in series as events are fired
+    { _from: USERS.admin, _to: USERS.owner, _value: 2 },
+    { _from: USERS.owner, _to: USERS.admin, _value: val => val > 40 }, // pass a function to assert `true`
+  ], outputTransformation, eventCausingPromise);
+
+  // assert not equal
+  contest.throwEvent(testContract.AnotherEvent, 'does not broadcast sensitive information', [
+    { _user: '1337h4x0r', _secret: data => !!data }, // `throwEvent` will fail if outputs match or resolve to `true`
+  ], eventCausingPromise);
+})
+```
+
+**Method test suite** TODO
+
+```javascript
+// assert multiple statements for method for in sequence
 contest.suite(myContract.someMethod, [
   ['assert: does function properly',
     [[input, {from: someAdmin}], expectedOutput]
@@ -83,6 +113,15 @@ contest.suite(myContract.someMethod, [
   ],
 ]);
 ```
+
+
+
+## TODO Roadmap
+
+* Assert for events
+* Global re-runs (e.g. try different gas amounts on every test)
+* Abstract even further with batches of statements for the same method (see below)
+* More features...
 
 ## Tests
 
