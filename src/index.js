@@ -11,12 +11,15 @@ function setUp(type, [method, _statement, _samples, _transformers], handler) {
       return handler({ promise, params, expected, transformers });
     }));
   }
+
+  // no statement
   if (typeof statement !== 'string') {
     statement = null;
     samples = _statement || [];
     transformers = _samples || [];
     return promiseFactory();
   }
+  // is statement
   const xString = samples.length > 1 ? ` x${samples.length}` : '';
   return global.it(`${statement}${xString}`, promiseFactory);
 }
@@ -30,8 +33,8 @@ export default class Contest {
         const outputs = Array.isArray(res) ? res : [res];
         const expectedOutput = Array.isArray(expected) ? expected : [expected];
         expectedOutput.forEach((output, i) => {
-          const test = transformers[i] ? transformers[i](output, params) : output;
-          global.assert.equal(test, outputs[i]);
+          const test = transformers[i] ? transformers[i](outputs[i], params) : outputs[i];
+          global.assert.equal(test, output);
         });
       }).catch(err => global.assert.ifError(err));
     });
