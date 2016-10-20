@@ -43,10 +43,13 @@ contest.assert(myContract.someMethod, 'does some things', [
 
 describe('transactingMethod', function() {
   // assert that a transaction doesn't mess up
-  contest.transact(myContract.someMethod, 'does not throw; performs a transaction', [
+  contest.assertTx(myContract.someMethod, 'does not throw; performs a transaction', [
     [a, b, c, { from: someAccount, gas: ... }],
     [a, b, c],
     [a, b, c],
+  ]);
+  contest.throwTx(myContract.someMethod, 'does throw; transaction failed', [
+    [a, b, c, { from: someAccount, gas: 13 }],
   ]);
 })
 

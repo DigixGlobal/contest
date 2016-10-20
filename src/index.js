@@ -17,7 +17,8 @@ function setUp(type, [method, _statement, _samples, _transformers], handler) {
     transformers = _samples || [];
     return promiseFactory();
   }
-  return global.it(`${statement} x${samples.length}`, promiseFactory);
+  const xString = samples.length > 1 ? ` x${samples.length}` : '';
+  return global.it(`${statement}${xString}`, promiseFactory);
 }
 
 export default class Contest {
@@ -44,11 +45,19 @@ export default class Contest {
     });
   }
 
-  transact(...opts) {
+  assertTx(...opts) {
     return setUp('transact', opts, ({ promise }) => {
       return promise
       .then((tx) => global.assert.ok(tx))
       .catch((err) => global.assert.ifError(err));
+    });
+  }
+
+  throwTx(...opts) {
+    return setUp('transact', opts, ({ promise, params }) => {
+      return promise
+      .then(() => global.assert.ifError(`did not throw: ${JSON.stringify(params)}`))
+      .catch((err) => global.assert.ok(err));
     });
   }
 
