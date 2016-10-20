@@ -22,7 +22,9 @@ npm install --save-dev @digix/contest
 ## Usage
 
 ```javascript
-describe('safeAdd', function() {  
+const contest = new Contest({ debug: true }); // `debug` defaults to false
+
+describe('usageExample', function() {  
   // manages multiple async assertions
   contest.assert(myContract.safeAdd, 'adds safe integers', [
     [[1, 2], 3], // [[param1, param2], expectedOutput1]
@@ -34,7 +36,14 @@ describe('safeAdd', function() {
     [-1, 2], // [param1, param2]
     [20, -1],
   ]);
-})
+});
+
+describe('shorthand', function () {
+  it('works without setting an it statement', function () {
+    // return statement is important if using shorthand
+    return contest.assert(myContract.assertMethod, [[[1], 1]]);
+  });
+});
 
 // assert multiple outputs
 contest.assert(myContract.someMethod, 'does some things', [

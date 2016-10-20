@@ -2,12 +2,13 @@ function setUp(type, [method, _statement, _samples, _transformers], handler) {
   let statement = _statement;
   let samples = _samples || [];
   let transformers = _transformers || [];
+
   function promiseFactory() {
     return Promise.all(samples.map(function (sample) {
       const params = type !== 'assert' ? sample : sample[0] || [];
       const expected = type !== 'assert' ? null : sample[1] || [];
       const fn = type !== 'transact' ? method.call : method;
-      const promise = fn.apply(null, params);
+      const promise = fn(...params);
       return handler({ promise, params, expected, transformers });
     }));
   }
@@ -26,15 +27,20 @@ function setUp(type, [method, _statement, _samples, _transformers], handler) {
 
 export default class Contest {
 
+  constructor({ debug }) {
+    this.debug = debug;
+  }
+
   assert(...opts) {
     return setUp('assert', opts, ({ promise, params, expected, transformers }) => {
       return promise
-      .then(function (res = []) {
+      .then((res = []) => {
         const outputs = Array.isArray(res) ? res : [res];
         const expectedOutput = Array.isArray(expected) ? expected : [expected];
-        expectedOutput.forEach((output, i) => {
-          const test = transformers[i] ? transformers[i](outputs[i], params) : outputs[i];
-          global.assert.equal(test, output);
+        expectedOutput.forEach((eOutput, i) => {
+          const transformedOutput = transformers[i] ? transformers[i](outputs[i], params) : outputs[i];
+          if (this.debug) { console.log('assert:', transformedOutput, eOutput); }
+          return global.assert.equal(transformedOutput, eOutput);
         });
       }).catch(err => global.assert.ifError(err));
     });
@@ -44,15 +50,21 @@ export default class Contest {
     return setUp('throw', opts, ({ promise, params }) => {
       return promise
       .then(() => global.assert.ifError(`did not throw: ${JSON.stringify(params)}`))
-      .catch((err) => global.assert.ok(err));
+      .catch((err) => {
+        if (this.debug) { console.log('throw:', err); }
+        return global.assert.ok(err);
+      });
     });
   }
 
   assertTx(...opts) {
     return setUp('transact', opts, ({ promise }) => {
       return promise
-      .then((tx) => global.assert.ok(tx))
-      .catch((err) => global.assert.ifError(err));
+      .then((tx) => {
+        if (this.debug) { console.log('assertTx:', tx); }
+        return global.assert.ok(tx);
+      })
+      .catch(err => global.assert.ifError(err));
     });
   }
 
@@ -60,7 +72,10 @@ export default class Contest {
     return setUp('transact', opts, ({ promise, params }) => {
       return promise
       .then(() => global.assert.ifError(`did not throw: ${JSON.stringify(params)}`))
-      .catch((err) => global.assert.ok(err));
+      .catch((err) => {
+        if (this.debug) { console.log('throwTx:', err); }
+        return global.assert.ok(err);
+      });
     });
   }
 
