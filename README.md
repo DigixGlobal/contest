@@ -7,7 +7,9 @@ Simplified API for testing contracts; generates mocha tests.
 ## Features
 
 * Minimal boilerplate for testing contract I/O
-* Run multiple assertions in parallel
+* No more wrangling with async/promises
+* Runs multiple assertions in parallel
+* Handle throw events
 * Assert transaction success
 * TODO: Events
 
@@ -29,8 +31,8 @@ describe('safeAdd', function() {
   ], (res) => res.toNumber()); // pass a transformer to parse results
   // manages throws
   contest.throw(myContract.safeAdd, 'throws unsafe integers', [
-    [[2 ** 256, 2], // [param1, param2]
-    [[20, 2 ** 256],
+    [-1, 2], // [param1, param2]
+    [20, -1],
   ]);
 })
 
@@ -41,8 +43,8 @@ contest.assert(myContract.someMethod, 'does some things', [
 
 describe('transactingMethod', function() {
   // assert that a transaction doesn't mess up
-  contest.transact(myContract.someMethod, 'doesnt throw; performs a transaction', [
-    [a, b, c],
+  contest.transact(myContract.someMethod, 'does not throw; performs a transaction', [
+    [a, b, c, { from: someAccount, gas: ... }],
     [a, b, c],
     [a, b, c],
   ]);
