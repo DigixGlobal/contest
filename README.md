@@ -41,6 +41,7 @@ describe('usageExample', function() {
 describe('shorthand', function () {
   it('works without setting an it statement', function () {
     // return statement is important if using shorthand
+    // TODO remove extra brackets requirement if there's only item in array
     return contest.assert(myContract.assertMethod, [[[1], 1]]);
   });
 });
@@ -63,11 +64,25 @@ describe('transactingMethod', function() {
 })
 ```
 
+
 ## TODO Roadmap
 
 * Assert for events
 * Global re-runs (e.g. try different gas amounts on every test)
 * More features...
+* Abstract even further with batches of statements for the same method (see below)
+
+```javascript
+// TODO assert multiple statements for method for in sequence
+contest.suite(myContract.someMethod, [
+  ['assert: does function properly',
+    [[input, {from: someAdmin}], expectedOutput]
+  ],
+  ['throw: does not let non-admins call it',
+    [input, { from: someUser }],
+  ],
+]);
+```
 
 ## Tests
 
