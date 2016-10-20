@@ -61,11 +61,13 @@ describe('transactingMethod', function() {
     [a, b, c, { from: someAccount, gas: 13 }],
   ]);
 })
-
-// TODO assertions for events
-contest.listenFor('someEvent');
-contest.stopListeningTo('someEvent');
 ```
+
+## TODO Roadmap
+
+* Assert for events
+* Global re-runs (e.g. try different gas amounts on every test)
+* More features...
 
 ## Tests
 
