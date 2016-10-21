@@ -33,6 +33,7 @@ export default {
   throwMethod: {
     call: throwPromise,
   },
+  // TODO
   AssertEvent(settings) {
     // ({ fromBlock: 'latest' });
   },

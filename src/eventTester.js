@@ -1,7 +1,7 @@
 import parseOptions from './parseOptions';
 
 export default function eventTester(opts, handler) {
-  const { method, statement, samples, transformers, beforeEventFn, timeout } = parseOptions(opts);
+  const { method, statement, samples, transformers, beforeEventFn } = parseOptions(opts);
   function promiseFactory() {
     return new Promise((resolve) => {
       const watcher = method({ fromBlock: 'latest' });
@@ -29,13 +29,11 @@ export default function eventTester(opts, handler) {
           if (i === samples.length) { safeResolve(); }
         }
       });
-      // execute the function to listen for and add a timeout
-      console.log('executing...', beforeEventFn);
+      // execute the function to listen for and add a
       return beforeEventFn().then(() => {
-        return new Promise((done) => setTimeout(done, timeout || 600));
+        return new Promise((done) => setTimeout(done, 600));
       }).then(safeResolve);
     });
   }
-  console.log('wrapping it?', !!statement);
   return statement ? global.it(statement, promiseFactory) : promiseFactory();
 }

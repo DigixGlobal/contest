@@ -63,6 +63,7 @@ describe('contest', function () {
     ], [(res) => (res + 2), (res) => (res + 4)]);
   });
 
+  // TODO
   describe('events', function () {
     // // assert equal
     // const admin = '0x123';
