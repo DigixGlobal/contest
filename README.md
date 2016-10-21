@@ -16,13 +16,13 @@ Simplified API for testing contracts; generates mocha tests.
 
 ## Installation
 
-You should be suing truffle.
+You should be using truffle.
 
 ```
 npm install --save-dev @digix/contest
 ```
 
-Stick this in your test suite.
+Stick this at the top of `./tests/index.js` to use `contest` in your your tests.
 
 ```javascript
 global.contest = new Contest({ debug: true }); // `debug` defaults to false
@@ -195,7 +195,7 @@ describe('Event Listener', function () {
 
 * Global config for re-runs (e.g. try different gas amounts on every test)
 * More features...
-* Cucumber?
+* Generate tests from Cucumber? Imagine a future where contracts are verified against english as such:
 
 ```cucumber
 Scenario: Interacting with ResolverClient
@@ -209,7 +209,7 @@ Scenario: Interacting with ResolverClient
     Given I am Ace
     And I use the contract ResolverClient
     And I register contract 'a:gold' as '0x123...def'
-    Then get contract 'a:gold' is 0x123...def
+    Then get contract 'a:gold' is '0x123...def'
 ```
 
 ## Tests
