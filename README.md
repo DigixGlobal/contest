@@ -70,7 +70,7 @@ describe('transactingMethod', function() {
 })
 ```
 
-**Assert event data** TODO
+**Assert event data**
 
 
 ```javascript
@@ -102,34 +102,13 @@ describe('Event Listener', function () {
 })
 ```
 
-**API Update: Method test suite** TODO
+**Future API Update: Promise-style test suite** *TODO*
+
+Just some brainstorming about future api options...
 
 ```javascript
-
-// Just some brainstorming about future api options
-
-// assert multiple statements for method for in sequence
-contest.suite(myContract.someMethod, [
-  ['assert: does function properly',
-    [[input, {from: someAdmin}], expectedOutput]
-  ],
-  ['throw: does not let non-admins call it',
-    [input, { from: someUser }],
-  ],
-]);
-
-// multiple contracts?
-contest.suite([
-  [
-    myContract.someMethod, 'describesText'
-    [
-      ['asset: starts with admin', ]
-    ]
-  }]
-]);
-
 // future ultra-minimal api options?
-contest.use(myContract.someMethod)
+contest.use(myContract.someMethod, 'call')
 .assert('allows admins to update', [[1, 2, { from: admin }], [1, 2]])
 .assert('lots some users update' [
   [['cool', 'cat'], [true, false]],
@@ -137,8 +116,9 @@ contest.use(myContract.someMethod)
   [['uncool', 'cat'], [false, false]]
 ], [(str) => str === 'cool', (str) => str === 'dog'])
 .throw('does not work with bad params', [2, 3])
-.use(myContract.someOtherMethod)
-.throwTx('does not allow transactions');
+.use(myContract.someOtherMethod, 'transaction')
+.assert('allows transactions from admin account', [{ from: admin }])
+.throw('does not allow transactions from admin account');
 ```
 
 
