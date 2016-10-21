@@ -159,7 +159,7 @@ describe('transactingMethod', function() {
 })
 ```
 
-**Assert event data** (Warning: unstable API)
+**Assert event data** (Warning: unstable API - tests pending)
 
 
 ```javascript
@@ -203,13 +203,13 @@ Scenario: Interacting with ResolverClient
   Scenario: Non admin fails to gain access
     Given I am Jeff
     And I use the contract ResolverClient
-    I cannot register contract
+    Then I cannot register contract
 
   Scenario: Non admin fails to gain access
     Given I am Ace
     And I use the contract ResolverClient
-    I can register contract 'a:gold' 0x123...def
-    And get contract 'a:gold' is 0x123...def
+    And I register contract 'a:gold' as '0x123...def'
+    Then get contract 'a:gold' is 0x123...def
 ```
 
 ## Tests
