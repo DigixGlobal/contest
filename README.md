@@ -78,7 +78,9 @@ describe('Event Listener', function () {
   // define some function that returns a promise and causes events to fire
   function eventCausingPromise () {
     return testContract.transfer(2, USERS.owner, { from: USERS.admin })
-    .then(() => testContract.transfer(1, USERS.admin, { from: USERS.owner }));
+    .then(() => testContract.transfer(1, USERS.admin, { from: USERS.owner }))
+    // wait 3 seconds if you want, it'll resolve sooner if all the assertions are complete.
+    .then(() => new Promise((resolve) => setTimeout(resolve, 3000)));
   }
 
   // optional output transformation function
@@ -95,14 +97,17 @@ describe('Event Listener', function () {
 
   // assert not equal
   contest.throwEvent(testContract.AnotherEvent, 'does not broadcast sensitive information', [
-    { _user: '1337h4x0r', _secret: data => !!data }, // `throwEvent` will fail if outputs match or resolve to `true`
+    { _user: '1337h4x0r', _secret: data => !!data }, // `throwEvent` will fail if all defined outputs match or resolve to `true`
   ], eventCausingPromise);
 })
 ```
 
-**Method test suite** TODO
+**API Update: Method test suite** TODO
 
 ```javascript
+
+// Just some brainstorming about future api options
+
 // assert multiple statements for method for in sequence
 contest.suite(myContract.someMethod, [
   ['assert: does function properly',
@@ -112,8 +117,29 @@ contest.suite(myContract.someMethod, [
     [input, { from: someUser }],
   ],
 ]);
-```
 
+// multiple contracts?
+contest.suite([
+  [
+    myContract.someMethod, 'describesText'
+    [
+      ['asset: starts with admin', ]
+    ]
+  }]
+]);
+
+// future ultra-minimal api options?
+contest.use(myContract.someMethod)
+.assert('allows admins to update', [[1, 2, { from: admin }], [1, 2]])
+.assert('lots some users update' [
+  [['cool', 'cat'], [true, false]],
+  [['cool', 'dog'], [true, true]],
+  [['uncool', 'cat'], [false, false]]
+], [(str) => str === 'cool', (str) => str === 'dog'])
+.throw('does not work with bad params', [2, 3])
+.use(myContract.someOtherMethod)
+.throwTx('does not allow transactions');
+```
 
 
 ## TODO Roadmap

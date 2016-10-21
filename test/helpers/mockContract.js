@@ -20,6 +20,10 @@ function assertPromise(...args) {
   });
 }
 
+function eventAssertPromise(...args) {
+
+}
+
 export default {
   assertTxMethod: assertPromise,
   throwTxMethod: throwPromise,
@@ -28,5 +32,12 @@ export default {
   },
   throwMethod: {
     call: throwPromise,
+  },
+  AssertEvent(settings) {
+    // ({ fromBlock: 'latest' });
+  },
+  // ThrowEvent:
+  triggerEvent(eventName, eventData) {
+    // AssertEvent
   },
 };
