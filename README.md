@@ -218,4 +218,4 @@ Scenario: Interacting with ResolverClient
 
 ## License
 
-MIT 2016
+BSD-3-Clause, 2016
