@@ -69,6 +69,7 @@ export default class Contest {
 
   assertEvent(...opts) {
     return eventTester(opts, (output, expectedOutput) => {
+      if (this.debug) { console.log('assertEvent:', output, expectedOutput); }
       // apply input function
       if (typeof expectedOutput === 'function') {
         return global.assert.equal(expectedOutput(output), true);
@@ -79,6 +80,7 @@ export default class Contest {
 
   throwEvent(...opts) {
     return eventTester(opts, (output, expectedOutput) => {
+      if (this.debug) { console.log('throwEvent:', output, expectedOutput); }
       // apply input function
       if (typeof expectedOutput === 'function') {
         return global.assert.equal(expectedOutput(output), false);
