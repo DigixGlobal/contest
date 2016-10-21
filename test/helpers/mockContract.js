@@ -20,6 +20,7 @@ function assertPromise(...args) {
   });
 }
 
+// TODO mock events
 function eventAssertPromise(...args) {
 
 }

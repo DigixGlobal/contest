@@ -2,7 +2,6 @@ import parseOptions from './parseOptions';
 
 export default function methodTester(type, opts, handler) {
   const { method, statement, samples, transformers } = parseOptions(opts);
-
   function promiseFactory() {
     return Promise.all(samples.map(function (sample) {
       const params = type !== 'assert' ? sample : sample[0] || [];
@@ -12,6 +11,5 @@ export default function methodTester(type, opts, handler) {
       return handler({ promise, params, expected, transformers });
     }));
   }
-
   return statement ? global.it(statement, promiseFactory) : promiseFactory();
 }
