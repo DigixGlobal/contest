@@ -9,7 +9,7 @@
     "compile": "rm -rf lib/* && ./node_modules/.bin/babel src -d lib",
     "prepublish": "npm run compile"
   },
-  "license": "MIT",
+  "license": "BSD-3-Clause",
   "author": "Chris Hitchcott <hitchcott@gmail.com> (http://hitchcott.com)",
   "repository": {
     "type": "git",
