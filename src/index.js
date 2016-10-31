@@ -47,19 +47,23 @@ export default class Contest {
       .then((res = []) => {
         // allow flexibility with array
         const outputs = Array.isArray(res) ? res : [res];
-        const expectedOutput = Array.isArray(expected) ? expected : [expected];
-        expectedOutput.forEach((eOutput, i) => {
+        const expectedOutputs = Array.isArray(expected) ? expected : [expected];
+        expectedOutputs.forEach((expectedOutput, i) => {
           // tranform output
-          const transformedOutput = transformers[i] ? transformers[i](outputs[i], params) : outputs[i];
+          let transformedOutput = transformers[i] ? transformers[i](outputs[i], params) : outputs[i];
           // transform expected output
-          if (typeof eOutput === 'function') {
-            if (this.debug) { console.log('assert equal:', transformedOutput, eOutput); }
-            return global.assert.equal(true, eOutput(transformedOutput));
+          if (typeof expectedOutput === 'function') {
+            if (this.debug) { console.log('assert equal:', transformedOutput, expectedOutput); }
+            return global.assert.equal(true, expectedOutput(transformedOutput));
+          // no transformers set, expected output is a number, and we can transform it
+          } else if (!transformers[i] && !isNaN(expectedOutput) && transformedOutput.toNumber) {
+            // automatically transform bignumbers
+            transformedOutput = transformedOutput.toNumber();
           }
           // log if debug enabled
           if (this.debug) { console.log('assert:', transformedOutput, expectedOutput); }
           // do the test
-          return global.assert.equal(transformedOutput, eOutput);
+          return global.assert.equal(transformedOutput, expectedOutput);
         });
       }).catch((err) => {
         if (this.debug) { console.log('TEST FAILURE: ', err); }
