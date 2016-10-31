@@ -29,6 +29,18 @@ export default class Contest {
     return this;
   }
 
+  values(contract, statement, values) {
+    const keys = Object.keys(values);
+    return global.describe(statement, () => {
+      return keys.forEach((key) => {
+        const method = contract[key];
+        const expected = values[key].value || values[key];
+        const transform = values[key].transform;
+        return this.assert(method, key, [[[], expected]], transform);
+      });
+    });
+  }
+
   assert(...opts) {
     return methodTester('assert', opts, ({ promise, params, expected, transformers }) => {
       return promise
@@ -87,18 +99,18 @@ export default class Contest {
   }
 
   _throwCatcher() {
-    return ({ promise, params }) => {
+    return ({ promise }) => {
       return promise
       .then(() => {
         if (this.debug) { console.log('TEST FAILURE: did not throw'); }
-        throw new Error(noThrowError)
+        throw new Error(noThrowError);
       })
       .catch((err) => {
-        if (err.message === noThrowError) { throw err }
+        if (err.message === noThrowError) { throw err; }
         if (this.debug) { console.log('throw:', err); }
         return global.assert.ok(err);
       });
-    }
+    };
   }
 
   _eventAsserter(assert) {
