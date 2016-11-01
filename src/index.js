@@ -1,6 +1,8 @@
 import methodTester from './methodTester';
 import eventTester from './eventTester';
 
+import { arrayify } from './helpers';
+
 const noThrowError = 'Method invocation did not cause an error';
 
 export default class Contest {
@@ -36,7 +38,7 @@ export default class Contest {
         const method = contract[key];
         const expected = values[key].value || values[key];
         const transform = values[key].transform;
-        return this.assert(method, key, [[[], expected]], transform);
+        return this.assert(method, `value '${key}' is correct`, [[[], expected]], transform);
       });
     });
   }
@@ -44,11 +46,9 @@ export default class Contest {
   assert(...opts) {
     return methodTester('assert', opts, ({ promise, params, expected, transformers }) => {
       return promise
-      .then((res = []) => {
-        // allow flexibility with array
-        const outputs = Array.isArray(res) ? res : [res];
-        const expectedOutputs = Array.isArray(expected) ? expected : [expected];
-        expectedOutputs.forEach((expectedOutput, i) => {
+      .then((outs) => {
+        const outputs = arrayify(outs);
+        expected.forEach((expectedOutput, i) => {
           // tranform output
           let transformedOutput = transformers[i] ? transformers[i](outputs[i], params) : outputs[i];
           // transform expected output
