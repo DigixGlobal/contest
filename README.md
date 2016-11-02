@@ -220,8 +220,9 @@ contest
 
 [method] [verb] [it]
 
-contest(MyContract)
-.deploy(args)
+contest
+.use()
+.deploy(args, 'myContract')
 .describe('User Events')
 .('Registration fires when making trasnfers', [1, 2, 3])
 .('Registration does not fire when in some other situation', [5, 2, 1])

@@ -13,7 +13,6 @@ export default function ([_methodName, _statement, _samples, _transformers]) {
     parsed.samples = _statement;
     parsed.transformers = _transformers;
   }
-
   // if method set and samples are an object, transform to array
   if (parsed.methodName && parsed.samples && !Array.isArray(parsed.samples)) {
     parsed.samples = Object.keys(parsed.samples).map(key => [[key], [parsed.samples[key]]]);
