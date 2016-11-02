@@ -1,6 +1,14 @@
-export function arrayify(sample) {
-  if (sample === undefined) {
-    return [];
+export function asyncIterator(data, fn, done) {
+  let i = 0;
+  function iterate() {
+    fn(data[i], () => {
+      i++;
+      if (i > data.length - 1) {
+        done();
+      } else {
+        iterate();
+      }
+    });
   }
-  return Array.isArray(sample) ? sample : [sample];
+  iterate();
 }

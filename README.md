@@ -85,7 +85,7 @@ Same as above, but with out descriptors. You must provide your own `desribe` and
 ```javascript
 describe('shorthand suite', function () {
   it('does not create if or describe blocks with the shorthand style', function () {
-    contest.suite(contract.assertMethod, [
+    return contest.suite(contract.assertMethod, [
       ['assert', [
         [[1, 2], [1, 2]],
         [[2], [2]],
@@ -189,6 +189,126 @@ describe('Event Listener', function () {
     { _user: '1337h4x0r', _secret: data => !!data }, // `throwEvent` will fail if all defined outputs match or resolve to `true`
   ], {}, eventCausingPromise);
 })
+```
+
+## TODO
+
+* Automatically parse result? If no transformer set, parse number if expected value is number
+* Return `this` on all methods for chaining?
+
+## API V2 Scratchpad
+
+```
+contest
+.describe
+.it('')
+
+// easy to read
+// automatically parse bigNumbers
+// transact in series, call in parralel
+
+contest
+.deploy(MyContract)
+.describe('it will do some cool shizzle')
+.throw('transact', 'call does not transact', [
+  [1, 2, { from: me }],
+  [1, 2, { from: me }]
+])
+.assert('initialization values are correct', {
+  thing: value
+})
+
+[method] [verb] [it]
+
+contest(MyContract)
+.deploy(args)
+.describe('User Events')
+.('Registration fires when making trasnfers', [1, 2, 3])
+.('Registration does not fire when in some other situation', [5, 2, 1])
+.('values are correct when it initializes', {
+  name: 'my name',
+  decimals: 3,
+  symbol: 'yawn',
+})
+.('balanceOf is correct when it initializes', { // pass in object OR array
+  '0x123123': 600,
+  '0x343434': 0, // objects only work for single-param mehods
+  '0x567567': 0
+})
+.('balanceOf calls when it initializes', [1,2,3])
+.('balanceOf call throws when', [12313, 123, 23])
+.('balanceOf transacts when',  [user, 2, 3])
+.('balanceOf transaction throws when')
+.('throws transaction balanceOf when user is not an admin')
+.('throws call transfer when user is not an admin', [])
+// when we're making sure we are not an admin
+.describe('Some other situation')
+.('this thing gets called')
+.as(USER.admin)
+.('')
+.contract(MyOtherContract)
+// new describe block ends event listening
+
+// automatic fallback to
+
+
+block = (contest, test) => {
+  return contest.describe(test)
+  .('Registration fires when making trasnfers', [1, 2, 3])
+  .('Registration does not fire when in some other situation', [5, 2, 1])
+  .('values are correct when it initializes', {
+    name: 'my name',
+    decimals: 3,
+    symbol: 'yawn',
+  })
+  .('balanceOf is correct when it initializes', { // pass in object OR array
+    '0x123123': 600,
+    '0x343434': 0, // objects only work for single-param mehods
+    '0x567567': 0
+  })
+  .('balanceOf calls when it initializes', [1,2,3])
+  .('balanceOf call throws when', [12313, 123, 23])
+  .('balanceOf transacts when',  [user, 2, 3])
+  .('balanceOf transaction throws when')
+  .('throws transaction balanceOf when user is not an admin')
+  .('throws call transfer when user is not an admin', [])
+  // when we're making sure we are not an admin
+}
+
+.describe('Admin does something')
+.as(adminAddress)
+.then(suite)
+.describe('User does something')
+.as(userAddress)
+.then(suite)
+
+
+// simple string parsing
+string.split('calls when') // 0 is method, 1 is statement
+
+keywordds
+
+[method] calls when
+[method] call throws when
+[method] transacts when
+[method] transaction throws when
+[event]  fires when
+[event]  does not fire when
+[method] is correct
+         values are correct
+
+`fire`, `throw`, `call`, `params`
+
+have correct [method] // when initialization values are correct
+will
+
+call, user values are correct
+throws transfer call, user is something
+transfer transaction, testing something out
+transfer transaction throws, in a certain state
+.stopListening()
+
+contest.warp(MyContract)
 ```
 
 ## Roadmap

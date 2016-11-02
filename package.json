@@ -1,6 +1,6 @@
 {
   "name": "@digix/contest",
-  "version": "0.0.1",
+  "version": "0.0.3",
   "description": "Delightful contract assertions for truffle",
   "main": "lib/index.js",
   "scripts": {

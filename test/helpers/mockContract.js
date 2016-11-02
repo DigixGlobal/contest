@@ -26,7 +26,8 @@ function eventAssertPromise(...args) {
 }
 
 export default {
-  assertTxMethod: assertPromise,
+  contract_name: 'MockContract',
+  assertTxMethod: () => assertPromise('hash'),
   throwTxMethod: throwPromise,
   assertMethod: {
     call: assertPromise,

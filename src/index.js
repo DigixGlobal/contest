@@ -1,130 +1,86 @@
-import methodTester from './methodTester';
-import eventTester from './eventTester';
-
-import { arrayify } from './helpers';
-
-const noThrowError = 'Method invocation did not cause an error';
+import parser from './parser';
+import tester from './tester';
+// import deploy from './deploy';
 
 export default class Contest {
+  constructor({ defaultParams = {}, debug = false } = {}) {
+    // this.promise = promise;
+    // this.promise = this;
+    this.contractOptions = defaultParams;
+    this.debug = debug;
+    // this.debug = debug;
+    this.describeQueue = [];
+    this.itQueue = [];
 
-  constructor(opts = {}) {
-    this.debug = opts.debug;
-  }
-
-  suite(method, _describe, _tests) {
-    const describe = !_tests ? null : _describe;
-    const tests = !_tests ? _describe : _tests;
-    const runTests = () => {
-      return tests.forEach((test) => {
-        const [descriptor, ...args] = test;
-        const testType = descriptor.split(' ').shift();
-        const statement = descriptor.split(' ').slice(1).join(' ').trim() || undefined;
-        const testParams = [method, statement, ...args];
-        return this[testType](...testParams);
-      });
-    };
-    if (describe) {
-      global.describe(describe, runTests);
-    } else {
-      runTests();
-    }
+    // each block is a describe block with a bunch of `it` statements
+    // at the end of the promise queue, we want to call all our blocks, with a description
+    // describe key .....
     return this;
   }
-
-  values(contract, statement, values) {
-    const keys = Object.keys(values);
-    return global.describe(statement, () => {
-      return keys.forEach((key) => {
-        const method = contract[key];
-        const expected = values[key].value || values[key];
-        const transform = values[key].transform;
-        return this.assert(method, `value '${key}' is correct`, [[[], expected]], transform);
+  done() {
+    this.executeChain();
+    // // allow it to execute the shit at the end!
+    // console.log("we done!", this.deferred);
+    // const deferred = this.deferred;
+    // console.log('got deferred', deferred)
+    return this.deferred;
+  }
+  _(_method, _statment, _samples, _transformers) {
+    // pass statment and method to parser
+    const { contract } = this;
+    const options = parser({ statement, samples });
+    const tests = tester.apply(this, [{ contract, options, samples, transformers }]);
+    if (!this.contract) { throw new Error('Contract not deployed!'); }
+    this.itQueue.push(function () {
+      global.it(options.statement, function () {
+        return tests();
       });
     });
+    return this;
   }
-
-  assert(...opts) {
-    return methodTester('assert', opts, ({ promise, params, expected, transformers }) => {
-      return promise
-      .then((outs) => {
-        const outputs = arrayify(outs);
-        expected.forEach((expectedOutput, i) => {
-          // tranform output
-          let transformedOutput = transformers[i] ? transformers[i](outputs[i], params) : outputs[i];
-          // transform expected output
-          if (typeof expectedOutput === 'function') {
-            if (this.debug) { console.log('assert equal:', transformedOutput, expectedOutput); }
-            return global.assert.equal(true, expectedOutput(transformedOutput));
-          // no transformers set, expected output is a number, and we can transform it
-          } else if (!transformers[i] && !isNaN(expectedOutput) && transformedOutput.toNumber) {
-            // automatically transform bignumbers
-            transformedOutput = transformedOutput.toNumber();
-          }
-          // log if debug enabled
-          if (this.debug) { console.log('assert:', transformedOutput, expectedOutput); }
-          // do the test
-          return global.assert.equal(transformedOutput, expectedOutput);
-        });
-      }).catch((err) => {
-        if (this.debug) { console.log('TEST FAILURE: ', err); }
-        return global.assert.ifError(new Error(err));
-      });
+  registerAction(action) {
+    this.itQueue.push(action);
+  }
+  executeChain() {
+    const actions = this.itQueue;
+    if (!actions.length) { return; }
+    global.describe(this.describeBlock, function () {
+      actions.forEach(fn => fn());
     });
   }
-
-  assertTx(...opts) {
-    return methodTester('transact', opts, ({ promise }) => {
-      return promise
-      .then((tx) => {
-        if (this.debug) { console.log('assertTx:', tx); }
-        return global.assert.ok(tx);
-      })
-      .catch((err) => {
-        if (this.debug) { console.log('TEST FAILURE: it threw'); }
-        return global.assert.ifError(new Error(err));
-      });
-    });
+  // describe blocks set up a new subchain
+  describe(statement) {
+    this.executeChain();
+    this.describeBlock = statement;
+    this.itQueue = [];
+    return this;
   }
+  // deploy deploys sets up a new contract instance
+  deploy(newContract, optionalText) {
+    // should be a before block ?
+    const { contract } = this;
+    if (!newContract && !contract) { throw new Error('Contract not defined!'); }
+    // TODO Contract.new()...
+    // TODO this.contract =
 
-  throw(...opts) {
-    return methodTester('throw', opts, this._throwCatcher());
+    // use the thing
+
+    // otherwise let's deploy this bizatch
+    return this;
   }
-
-  throwTx(...opts) {
-    return methodTester('transact', opts, this._throwCatcher());
+  // uses already-deployed contract
+  use(contract, optionalText) {
+    // if we pass the text we create an upper level describe block
+    if (!contract) { throw new Error('Contract not defined!'); }
+    this.contract = contract;
+    return this;
   }
-
-  assertEvent(...opts) {
-    return eventTester(opts, this._eventAsserter(true));
-  }
-
-  throwEvent(...opts) {
-    return eventTester(opts, this._eventAsserter(false));
-  }
-
-  _throwCatcher() {
-    return ({ promise }) => {
-      return promise
-      .then(() => {
-        if (this.debug) { console.log('TEST FAILURE: did not throw'); }
-        throw new Error(noThrowError);
-      })
-      .catch((err) => {
-        if (err.message === noThrowError) { throw err; }
-        if (this.debug) { console.log('throw:', err); }
-        return global.assert.ok(err);
-      });
-    };
-  }
-
-  _eventAsserter(assert) {
-    return (output, expectedOutput) => {
-      if (this.debug) { console.log('assertEvent:', output, expectedOutput); }
-      // apply input function
-      if (typeof expectedOutput === 'function') {
-        return global.assert.equal(expectedOutput(output), true);
-      }
-      return global.assert[assert ? 'equal' : 'notEqual'](output, expectedOutput);
-    };
+  // as(args) {
+  //   // add action, set the user
+  //   this.set({ from: [] })
+  //   return this;
+  // }
+  set(args) {
+    this.contractOptions = { ...this.state, ...args };
   }
 }
