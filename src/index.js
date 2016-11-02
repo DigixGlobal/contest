@@ -8,20 +8,32 @@ export default class Contest {
     this.actionQueue = [];
     return this;
   }
-  done() {
-    this.executeQueue();
-    return this;
-  }
   _(...args) {
     // pass statment and method to parser
     const { contract, config } = this;
-    if (!contract) { throw new Error('Contract not deployed!'); }
+    if (!contract) { throw new Error('Contract not set!'); }
     const opts = parser(args);
     const tests = tester({ ...opts, config, contract });
-    this.addToQueue({ opts, tests });
+    this._addToQueue({ opts, tests });
     return this;
   }
-  addToQueue({ opts, tests }) {
+  done() {
+    const actions = this.actionQueue;
+    if (!actions.length) { return this; }
+    global.describe(this.describeBlock, function () {
+      actions.forEach(fn => fn());
+    });
+    return this;
+  }
+  // describe blocks set up a new `it` queue
+  describe(statement) {
+    this.done();
+    this.describeBlock = statement;
+    this.actionQueue = [];
+    return this;
+  }
+  // internal queue method
+  _addToQueue({ opts, tests }) {
     // deal with events
     if (opts.type === 'event') {
       this.actionQueue.push({ tests, event: true, statement: opts.statement });
@@ -45,19 +57,17 @@ export default class Contest {
     }
     return this;
   }
-  executeQueue() {
-    const actions = this.actionQueue;
-    if (!actions.length) { return; }
-    global.describe(this.describeBlock, function () {
-      actions.forEach(fn => fn());
-    });
+  _setContractInstance() {
+
   }
-  // describe blocks set up a new subchain
-  describe(statement) {
-    this.executeQueue();
-    this.describeBlock = statement;
-    this.actionQueue = [];
-    return this;
+  _getContractInstance() {
+
+  }
+  _getContract() {
+    // return instance of contract
+  }
+  _setContract() {
+
   }
   // TODO impelement these....
   // deploy deploys sets up a new contract instance
