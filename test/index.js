@@ -1,6 +1,5 @@
 /* eslint-env mocha */
 
-import assert from 'assert';
 import contract from './helpers/mockContract';
 import Contest from '../src';
 
@@ -9,40 +8,38 @@ const contest = new Contest({ debug: false });
 contest
 .use(contract) // or deploy a new one...
 .describe('Balance Transfers')
-._('initializes with correct values', {
-  [] : 1,
-  [] : 2,
+// if you an object and no method, it will call each method and asser the given output
+._('initializes with correct balances', {
+  assertMethod1: 1,
+  assertMethod2: 2,
+})
+// pass no test; call with empty params; assert it doesnt throw
+._('assertMethod', 'pass no test; assert that it doesnt throw')
+// pass sigle test; assert with inputs and outputs
+._('assertMethod', 'pass one test; assert i/o', [[1], [1]])
+// pass multiple tests
+._('assertMethod', 'pass multiple tests', [
+  [[2], [2]],
+  [[3], [3]],
+])
+// if you pass an object + method, it will be transformed into tests like: [[key], [val]]
+._('assertMethod', 'initialization values are correct', {
+  a: 'a',
+  b: 'b',
 })
 ._('assertMethod', 'initializes with correct values', [
-  [1, 3], [3, 3]], [(val) => 3]
-)
-._('throwMethod throws', 'when called with bad values', [
+  [[1, 3], [1, true]],
+  [[1, 3], [1, true]],
+  [[1, 3], [1, true]],
+   // passing a transformer as a 4th param will transform all outputs
+], [null, (val) => val > 2])
+._('assertMethod', 'has all the correct values ', [
   [[1, 3, { from: 'bob' }], [1, 3]],
   [[1, 2], [1, 2]],
-  [[1, 9], [1, (val) => val > 5]]
+  [[1, 9], [1, (val) => val > 5]], // pass a function to output to asser true
 ])
 .describe('some other block')
-._('throwMethod transaction', 'is succesful when used by admin', [1, 1])
-// .wait(1, 2000) // wait a bit for tempo....
-// .timeout(123123)
-._('assertTxMethod transaction throws', 'when admin transacts', [1, 3, 2])
-._('throwTxMethod transaction throws', 'when a throw method is called', [])
-.describe('Some other section')
-._('assertMethod call', 'when using bad values', [[1], [1]])
-._('throwMethod call throws', 'when initialization values are incorrect', [12313, 123, 23])
+._('assertTxMethod transaction', 'is succesful when used by admin', [1, 1])
+._('throwTxMethod transaction', 'throws when used by a non-admin', [])
+._('throwMethod', 'throws when initialization values are incorrect')
 .done();
-// ._('balanceOf transacts when user is an admin', [
-//   [5, 2, 3],
-//   [5, 2, 3],
-//   [5, 2, 3],
-// ])
-// ._('balanceOf transaction throws when')
-// .describe('Done initializing')
-// ._('balanceOf transaction throws when some condition happen')
-// ._('balanceOf transaction throws when some other condition happens')
-// ._('balanceOf calls when my condition is met', [])
-// ._('balanceOf call throws when my condition is met')
-// ._('balanceOf transacts when my condition is met')
-// ._('balanceOf transaction throws when my condition is met')
-// ._('MyEvent fires when my condition is met')
-// ._('MyEvent does not fire when my condition is met')

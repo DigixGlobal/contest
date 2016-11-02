@@ -32,6 +32,8 @@ export default {
   assertMethod: {
     call: assertPromise,
   },
+  assertMethod1: { call: () => assertPromise(1) },
+  assertMethod2: { call: () => assertPromise(2) },
   throwMethod: {
     call: throwPromise,
   },

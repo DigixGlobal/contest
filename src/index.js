@@ -3,43 +3,27 @@ import tester from './tester';
 // import deploy from './deploy';
 
 export default class Contest {
-  constructor({ defaultParams = {}, debug = false } = {}) {
-    // this.promise = promise;
-    // this.promise = this;
-    this.contractOptions = defaultParams;
-    this.debug = debug;
-    // this.debug = debug;
+  constructor({ debug = false } = {}) {
+    this.config = { debug };
     this.describeQueue = [];
     this.itQueue = [];
-
-    // each block is a describe block with a bunch of `it` statements
-    // at the end of the promise queue, we want to call all our blocks, with a description
-    // describe key .....
     return this;
   }
   done() {
     this.executeChain();
-    // // allow it to execute the shit at the end!
-    // console.log("we done!", this.deferred);
-    // const deferred = this.deferred;
-    // console.log('got deferred', deferred)
-    return this.deferred;
-  }
-  _(_method, _statment, _samples, _transformers) {
-    // pass statment and method to parser
-    const { contract } = this;
-    const options = parser({ statement, samples });
-    const tests = tester.apply(this, [{ contract, options, samples, transformers }]);
-    if (!this.contract) { throw new Error('Contract not deployed!'); }
-    this.itQueue.push(function () {
-      global.it(options.statement, function () {
-        return tests();
-      });
-    });
     return this;
   }
-  registerAction(action) {
-    this.itQueue.push(action);
+  _(...args) {
+    // if sample is an object, transform them
+    // pass statment and method to parser
+    const { contract, config } = this;
+    const opts = parser(args);
+    const tests = tester({ ...opts, config, contract });
+    if (!this.contract) { throw new Error('Contract not deployed!'); }
+    this.itQueue.push(function () {
+      global.it(opts.statement, function () { return tests(); });
+    });
+    return this;
   }
   executeChain() {
     const actions = this.itQueue;
@@ -80,7 +64,7 @@ export default class Contest {
   //   this.set({ from: [] })
   //   return this;
   // }
-  set(args) {
-    this.contractOptions = { ...this.state, ...args };
-  }
+  // set(args) {
+  //   this.contractOptions = { ...this.state, ...args };
+  // }
 }

@@ -1,28 +1,29 @@
 // import testEvents from './test_events';
-import testMethod from './test_methods';
+import testMethod, { batch } from './test_methods';
 
 function batchAssert(args) {
   console.log('batching', args);
 }
 
 export default function (args) {
-  const { contract, options } = args;
   // ensure we have the method when it is required
-  if (options.type === 'batchAssert') {
+  if (args.type === 'batch') {
     // do batch assert
-    return batchAssert();
+    return batch(args);
   }
-  if (!options.method || !contract[options.method]) {
-    throw new Error(`Method '${options.method}' not found on '${contract.contract_name}'`);
+  // not a batch, we can define the method now
+  const method = args.contract[args.methodName];
+  // throw if it's not set
+  if(!method) {
+    throw new Error(`Method ${args.methodName} not found on contract ${args.contract.contract_name}`)
   }
-  const method = contract[options.method];
-  // events
-  // if (options.type === 'event') {
+  // transaction or call type
+  if (args.type === 'transaction' || args.type === 'call') {
+    return testMethod({ ...args, method });
+  }
+  // event type
+  // if (type === 'event') {
   //   return testEvents({ ...args, method });
   // }
-  // methods, determine assersion type..
-  if (options.type === 'transaction' || options.type === 'call') {
-    return testMethod.apply(this, [{ ...args, method }]);
-  }
   return new Error('Invalid params');
 }
