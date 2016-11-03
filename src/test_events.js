@@ -1,9 +1,9 @@
 import assert from 'assert';
 
-export default function ({ samples, method, config, transformers = [] }) {
+export default function ({ samples, contract, methodName, config, transformers = [] }) {
   return function (promiseToListenFor) {
     return new Promise((resolve, reject) => {
-      const watcher = method({ fromBlock: 'latest' });
+      const watcher = contract()[methodName]({ fromBlock: 'latest' });
       let resolved = false;
       let i = 0;
       function safeResolve() {

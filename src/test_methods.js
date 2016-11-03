@@ -83,10 +83,11 @@ export function batch(args) {
   return function () {
     return new Promise((resolve, reject) => {
       const { samples, contract } = args;
-      // TODO parse the inputs better; allow for multiple I/O
+      const contractInstance = contract();
       const tests = Object.keys(samples).map((key) => {
+        // TODO parse the inputs better; allow for multiple I/O
         return {
-          method: contract[key].call,
+          method: contractInstance[key].call,
           params: [],
           expected: [samples[key]],
         };
@@ -103,7 +104,8 @@ export default function (args) {
   // now do them in series
   return function () {
     return new Promise((resolve, reject) => {
-      const { method, type, expectThrow } = args;
+      const { contract, methodName, type, expectThrow } = args;
+      const method = contract()[methodName];
       const fn = type === 'transaction' ? method : method.call;
       let assersion = type === 'transaction' ? assertTransaction : assertCall;
       if (expectThrow) { assersion = throwCatcher; }

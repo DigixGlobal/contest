@@ -4,8 +4,8 @@
   "description": "Delightful contract assertions for truffle",
   "main": "lib/index.js",
   "scripts": {
-    "dev": "node_modules/.bin/mocha --watch --compilers js:babel-register",
-    "test": "node_modules/.bin/mocha --compilers js:babel-register",
+    "dev": "node_modules/.bin/mocha ./test/mock --watch --compilers js:babel-register",
+    "test": "node_modules/.bin/mocha ./test/mock --compilers js:babel-register",
     "compile": "rm -rf lib/* && ./node_modules/.bin/babel src -d lib",
     "prepublish": "npm run compile"
   },

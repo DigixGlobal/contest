@@ -24,7 +24,8 @@ function assertPromise(...args) {
   });
 }
 
-export default {
+const mock = {
+  address: '0xdeadbeef',
   contract_name: 'MockContract',
   assertTxMethod: () => assertPromise('hash'),
   throwTxMethod: throwPromise,
@@ -58,8 +59,15 @@ export default {
       },
     };
   },
-  // ThrowEvent:
-  triggerEvent(eventName, eventData) {
-    // AssertEvent
+};
+
+export const instantiator = {
+  contract_name: 'MockContract',
+  new: (name) => {
+    return new Promise((resolve) => {
+      setTimeout(() => resolve({ ...mock, testName: name }), 100);
+    });
   },
 };
+
+export default mock;
