@@ -65,7 +65,6 @@ export default class Contest {
   }
   // describe blocks set up a new `it` queue
   describe(statement) {
-    console.log('descriving')
     this.done();
     this.describeBlock = statement;
     this._actionQueue = [];
@@ -83,7 +82,6 @@ export default class Contest {
   // internal queue method
   _addToQueue({ opts, promise }) {
     // deal with things that should be merged into preceeding test
-    console.log('adding to que', opts)
     if (opts.type === 'event' || opts.type === 'before') {
       this._actionQueue.push({ promise, before: true, statement: opts.statement });
     } else {
@@ -104,7 +102,6 @@ export default class Contest {
         });
       }
     }
-    console.log('added');
     return this;
   }
   // return current instance of contract
