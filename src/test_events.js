@@ -2,10 +2,10 @@ import assert from 'assert';
 
 export default function ({ samples, contract, methodName, config, transformers = [] }) {
   return function (promiseToListenFor) {
+    let i = 0;
+    let resolved = false;
+    const watcher = contract().contract.allEvents('latest');
     return new Promise((resolve, reject) => {
-      const watcher = contract()[methodName]({ fromBlock: 'latest' });
-      let resolved = false;
-      let i = 0;
       function safeResolve() {
         if (!resolved) {
           resolved = true;
@@ -15,7 +15,7 @@ export default function ({ samples, contract, methodName, config, transformers =
         }
       }
       watcher.watch((error, result) => {
-        if (!error && !resolved) {
+        if (!error && !resolved && result.event === methodName) {
           i++;
           // run the assert for each output
           const expectedOutput = samples[i - 1];
