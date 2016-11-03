@@ -49,9 +49,12 @@ export default class Contest {
   // execute the current queue
   done() {
     const actions = this._actionQueue;
+    this._actionQueue = [];
     if (!actions.length) { return this; }
     global.describe(this.describeBlock, function () {
-      actions.forEach(fn => fn.promise ? fn.promise() : fn());
+      actions.forEach((fn) => {
+        if (fn.promise) { fn.promise(); } else { fn(); }
+      });
     });
     return this;
   }
@@ -67,7 +70,6 @@ export default class Contest {
   describe(statement) {
     this.done();
     this.describeBlock = statement;
-    this._actionQueue = [];
     return this;
   }
   _addCustomAction(statement, promise, type) {
