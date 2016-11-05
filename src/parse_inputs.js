@@ -1,4 +1,4 @@
-export default function ([_methodName, _statement, _samples, _transformers]) {
+export default function ([_methodName, _statement, _samples, _transformers], type) {
   // `statement` isn't a string, push latter values down
   const parsed = {
     methodName: _methodName,
@@ -18,7 +18,7 @@ export default function ([_methodName, _statement, _samples, _transformers]) {
     parsed.samples = Object.keys(parsed.samples).map(key => [[key], [parsed.samples[key]]]);
   }
   // if method is null, we're working with a batch assert
-  parsed.type = !parsed.methodName ? 'batch' : parsed.methodName.split(' ')[1] || 'call';
+  parsed.type = !parsed.methodName ? 'batch' : type || parsed.methodName.split(' ')[1] || 'call';
   parsed.methodName = parsed.methodName && parsed.methodName.split(' ')[0];
   parsed.expectThrow = parsed.statement.indexOf('throws ') === 0;
   return parsed;

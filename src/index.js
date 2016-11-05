@@ -41,10 +41,20 @@ export default class Contest {
   // pass statment and method to parser
   _(...args) {
     const { config } = this;
-    const opts = parser(args);
+    const { type } = args[args.length - 1];
+    const opts = parser(args, type);
     const promise = tester({ ...opts, config, contract: this._getContract.bind(this) });
     this._addToQueue({ opts, promise });
     return this;
+  }
+  tx(...args) {
+    return this._.apply(this, [...args, { type: 'transaction' }]);
+  }
+  call(...args) {
+    return this._.apply(this, [...args, { type: 'call' }]);
+  }
+  watch(...args) {
+    return this._.apply(this, [...args, { type: 'event' }]);
   }
   // execute the current queue
   done() {
