@@ -2,10 +2,10 @@ import assert from 'assert';
 
 export default function ({ samples, contract, methodName, config, transformers = [] }) {
   return function (promiseToListenFor) {
-    let i = 0;
-    let resolved = false;
-    const watcher = contract().contract.allEvents('latest');
     return new Promise((resolve, reject) => {
+      let resolved = false;
+      let i = 0;
+      const watcher = contract()[methodName]('latest');
       function safeResolve() {
         if (!resolved) {
           resolved = true;
@@ -15,7 +15,7 @@ export default function ({ samples, contract, methodName, config, transformers =
         }
       }
       watcher.watch((error, result) => {
-        if (!error && !resolved && result.event === methodName) {
+        if (!error && !resolved) {
           i++;
           // run the assert for each output
           const expectedOutput = samples[i - 1];
@@ -34,9 +34,14 @@ export default function ({ samples, contract, methodName, config, transformers =
           if (i === samples.length) { safeResolve(); }
         }
       });
-      // execute the function to listen for and add a timeout
-      return promiseToListenFor().then(() => {
-        return new Promise((done) => setTimeout(done, 600));
+      const buffers = [20, 1000]; // time delay before/after in ms
+      return new Promise((res, rej) => {
+        setTimeout(() => {
+          // execute the function to listen for and add a timeout
+          promiseToListenFor().then(() => {
+            return new Promise((done) => setTimeout(done, buffers[1]));
+          }).then(res).catch(rej);
+        }, buffers[0]);
       }).then(safeResolve).catch(reject);
     });
   };

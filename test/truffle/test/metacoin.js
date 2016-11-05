@@ -1,20 +1,5 @@
 import Contest from '../../../src';
 const contest = new Contest({ debug: true });
-
-// contract('MetaCoin', function () {
-//   it('does a thing', function(done) {
-//     setTimeout(() => {
-//       console.log("meta", MetaCoin);
-//       assert.equal(1,1);
-//       done()
-//     }, 2000);
-//   })
-//   // it('doeeeee');
-//   setTimeout(() => {
-//     console.log("hmm", MetaCoin)
-//   }, 1000)
-// });
-
 //
 // // woohoo!
 contract('MetaCoin', function (accounts) {
@@ -25,8 +10,6 @@ contract('MetaCoin', function (accounts) {
 
     contest
     .deploy(MetaCoin)
-    // .use(MetaCoin.deployed())
-
     .describe('Account Balances')
     ._('getBalance', 'initializes with correct balances', {
       [accounts[0]]: balance,
@@ -42,8 +25,12 @@ contract('MetaCoin', function (accounts) {
     .describe('Transfer balances')
     ._('Transfer event', 'fires the events correctly', [
       { _from: accounts[0], _to: accounts[1], _value: transfer },
+      { _from: accounts[1], _to: accounts[0], _value: transfer },
+      { _from: accounts[0], _to: accounts[1], _value: transfer },
     ])
     ._('sendCoin transaction', 'transfer succeeds', [
+      [accounts[1], transfer, { from: accounts[0] }],
+      [accounts[0], transfer, { from: accounts[1] }],
       [accounts[1], transfer, { from: accounts[0] }],
     ])
     ._('getBalance', 'balances after transaction are correct', {
