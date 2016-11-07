@@ -40,8 +40,8 @@ contest
   [1, 2, 3],
 ])
 // jump in with arbitray 'before' blocks
-.then((contract) => {
-  console.log('calling A from my custom before block', contract.contract_name);
+.then((c) => {
+  console.log('calling A from my custom before block', c.contract_name);
 })
 // jump in with arbitray 'before' blocks
 .then(beforeTest)

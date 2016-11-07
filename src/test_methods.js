@@ -85,7 +85,6 @@ export function batch(args) {
       const { samples, contract } = args;
       const contractInstance = contract();
       const tests = Object.keys(samples).map((key) => {
-        // TODO parse the inputs better; allow for multiple I/O
         return {
           method: contractInstance[key].call,
           params: [],
