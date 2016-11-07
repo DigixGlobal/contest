@@ -6,7 +6,7 @@ contract('MetaCoin', function (accounts) {
   // if we want to redeploy the contract we can do so
   it('is ready', function () {
     const balance = 10000;
-    const transfer = Math.ceil(Math.random() * balance / 2);
+    const transfer = Math.ceil(Math.random() * balance / 100);
 
     contest
     .deploy(MetaCoin)
@@ -33,11 +33,16 @@ contract('MetaCoin', function (accounts) {
       [accounts[0], transfer, { from: accounts[1] }],
       [accounts[1], transfer, { from: accounts[0] }],
     ])
+    .tx('sendCoin', [
+      [accounts[1], transfer, { from: accounts[0] }],
+      [accounts[0], transfer, { from: accounts[1] }],
+      [accounts[1], transfer, { from: accounts[0] }],
+      [accounts[0], transfer, { from: accounts[1] }],
+    ])
     .call('getBalance', 'balances after transaction are correct', {
       [accounts[0]]: balance - transfer,
       [accounts[1]]: transfer,
     })
-
     .done();
   });
 });
