@@ -73,11 +73,11 @@ export default class Contest {
     return this;
   }
   it(statement, promise) {
-    this._addCustomAction(statement, promise);
+    this._addCustomAction({ statement, promise });
     return this;
   }
   then(promise) {
-    this._addCustomAction(null, promise, 'before');
+    this._addCustomAction({ promise, type: 'then', before: true });
     return this;
   }
 
@@ -88,7 +88,7 @@ export default class Contest {
     return this;
   }
 
-  _addCustomAction(statement, promise, type) {
+  _addCustomAction({ statement, promise, type, before }) {
     this._addToQueue({
       promise: () => {
         // resolve promise or promisify regular functions
@@ -103,35 +103,36 @@ export default class Contest {
       opts: {
         statement,
         type,
+        before,
       },
     });
   }
   // internal queue method
   _addToQueue({ opts, promise }) {
-    const { type, statement } = opts;
-    const eventObj = { promise, type, statement };
+    const { type, statement, before } = opts;
+    const eventObj = { promise, type, statement, before };
     const previousAction = this._actionQueue[this._actionQueue.length - 1] || {};
     if (previousAction.type === 'event' && eventObj.type !== 'transaction') {
       throw new Error('`watch` must be followed by `tx`!');
     }
-    if (previousAction.type === 'before') {
+    if (previousAction.before) {
       // previous action should can executed in series
       eventObj.promise = (args) => {
         return new Promise((resolve, reject) => {
           // pass up the assersion failure
-          const p1 = previousAction.promise().catch(reject);
-          const p2 = promise(args).catch(reject);
-          p1.then(p2).then(resolve).catch(reject);
+          previousAction.promise().catch(reject)
+          .then(() => promise(args).catch(reject))
+          .then(resolve).catch(reject);
         });
       };
-      // if this item is an event or before, overwrite previous.
-      if (eventObj.type === 'before' || eventObj.type === 'event') {
+      // if this item is an event or then, overwrite previous.
+      if (eventObj.before || eventObj.type === 'event') {
         this._actionQueue[this._actionQueue.length - 1] = eventObj;
         return this;
       }
     }
-    // if we are before, but previous wasn't, push a new block
-    if (eventObj.type === 'before' || eventObj.type === 'event') {
+    // if we are then, but previous wasn't, push a new block
+    if (eventObj.before || eventObj.type === 'event') {
       // TODO do something if prev action is event?
       this._actionQueue.push(eventObj);
       return this;
