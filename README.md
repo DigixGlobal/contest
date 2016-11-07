@@ -144,7 +144,8 @@ Scenario: Interacting with ResolverClient
 
 ## Tests
 
-`npm run test`
+* Mocked contract: `npm run test`
+* Truffle environment: `cd ./test/truffle; testrpc & truffle test`
 
 ## License
 
