@@ -25,10 +25,14 @@ export default function ({ samples, contract, methodName, config, transformers =
             const output = transformers[key] ? transformers[key](result.args[key]) : result.args[key];
             if (config.debug) { console.log('assertEvent:', output, eOutput); }
             // apply input function
-            if (typeof eOutput === 'function') {
-              return assert.equal(true, eOutput(output), eOutput);
+            try {
+              if (typeof eOutput === 'function') {
+                return assert.equal(true, eOutput(output), eOutput);
+              }
+              return assert.equal(output, eOutput);
+            } catch (e) {
+              reject(e);
             }
-            return assert.equal(output, eOutput);
           });
           // end when done
           if (i === samples.length) { safeResolve(); }

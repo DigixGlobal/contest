@@ -115,7 +115,12 @@ export default class Contest {
     if (previousAction.type === 'before') {
       // previous action should can executed in series
       eventObj.promise = (args) => {
-        return previousAction.promise().then(promise(args));
+        return new Promise((resolve, reject) => {
+          // pass up the assersion failure
+          const p1 = previousAction.promise().catch(reject);
+          const p2 = promise(args).catch(reject);
+          p1.then(p2).then(resolve).catch(reject);
+        });
       };
       // if this item is an event or before, overwrite previous.
       if (eventObj.type === 'before' || eventObj.type === 'event') {
