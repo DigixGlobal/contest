@@ -24,8 +24,39 @@ npm install --save-dev @digix/contest
 Stick this at the top of `./tests/index.js` to use `contest` in your your tests.
 
 ```javascript
+import Contest from '@digix/contest';
 global.contest = new Contest({ debug: true }); // `debug` defaults to false
 ```
+
+## Usage
+
+Contest wires up a series of promises for you with a convenient chaining syntax.
+
+Each chain should end in `done` - see the example below for usage.
+
+Before calling methods, you must have a contract deployed:
+
+* Contract
+  * `.deploy(contract, [ params ])` deploys a new instance of contract with given params
+  * `.use(contractInstance)` use an existing instance of a an already-deployed contract
+
+Once you have set a contract you can begin scripting against it:
+
+* Methods
+  * `.call(method, statement, samples)` call method with a series of statements
+  * `.tx(method, statement, samples, transformers)` same as above, initiate transaction
+  * If the first word in `statement` is `throw`, contest will expect the call/tx to throw.
+  * `samples` in the format `[ sample, sample, sample ]`, or pass a single `sample` for a single test
+  * `sample` for non-assertions (call/throw), use format `[input1, input2]`, for assertions, use `[[input1, input2], [output1, output2]]`
+  * `output` expected output to match; if output is a function, it will consume the method's output and resolve true/false
+  * `transformers` an array of functions that transform the outputs before asserting; e.g. `[v => v.toNumber(),v => '0x' +v]`
+* Events
+  * `.watch(method, statement, samples)` the next block must be a `tx`, it will match each sample in samples
+  * `sample` for `watch` is in the format `{ _param1: output1, _param2: output2 }`
+* Test
+  * `.describe(description)` new describe block; for organixation only
+  * `.then(promise)` return a promise or execute arbitrary code
+  * `done()` end each chain with `done` to execute chain
 
 ## Example
 
@@ -42,9 +73,15 @@ contest
   [accounts[0]]: balance, // ES6 => { '0x123': 100, '0x456': 0 }
   [accounts[1]]: 0, // will envoke and compare result of getBalance('0x456')
 })
+// notice that we're passing an array here instead of an object, use multi-input-output syntax
+.call('getBalance', 'some other statement', [
+  [[accounts[0]], [bal => bal > 2]], // pass a function to resolve to `true` rather than equality assertion
+  [[accounts[1]], [0],
+])
 .describe('Library Import')
+// call a different method
 .call('getBalanceInEth', 'returns correct value from inherited method', {
-  [accounts[0]]: balance * 2,
+  [accounts[0]]: balance,
   [accounts[1]]: 0,
 })
 // use `tx` to create a transaction. multiple transactions are executed in series
@@ -84,21 +121,6 @@ contest
 })
 .done();
 ```
-
-## Usage
-
-* Contract
-  * `deploy(contract, [ params ])`
-  * `use(contractInstance)`
-* Methods
-  * `call(method, statement, samples, transformers)`
-  * `tx(method, statement, samples)`
-* Events
-  * `watch(method, statement, samples)`
-* Test
-  * `then(promise)`
-  * `describe(description)`
-  * `done()`
 
 ## Roadmap
 
