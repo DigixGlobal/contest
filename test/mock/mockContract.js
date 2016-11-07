@@ -12,7 +12,6 @@ function throwPromise() {
 function assertPromise(...args) {
   return new Promise((resolve) => {
     setTimeout(() => {
-      myEmitter.emit('event', args);
       if (args.length === 0) {
         return resolve(null);
       }
@@ -34,7 +33,13 @@ const mock = {
   },
   assertMethod1: { call: () => assertPromise(1) },
   assertMethod2: { call: () => assertPromise(2) },
-  eventMethod: assertPromise,
+  eventMethod: (...args) => {
+    return new Promise((resolve) => {
+      assertPromise(...args)
+      .then(() => myEmitter.emit('event', args))
+      .then(resolve)
+    });
+  },
   throwMethod: {
     call: throwPromise,
   },
