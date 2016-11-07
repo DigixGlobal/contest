@@ -76,16 +76,18 @@ export default class Contest {
     this._addCustomAction(statement, promise);
     return this;
   }
-  before(promise) {
+  then(promise) {
     this._addCustomAction(null, promise, 'before');
     return this;
   }
+
   // describe blocks set up a new `it` queue
   describe(statement) {
     this.done();
     this.describeBlock = statement;
     return this;
   }
+
   _addCustomAction(statement, promise, type) {
     this._addToQueue({
       promise: () => {
