@@ -1,7 +1,7 @@
 import assert from 'assert';
 
 import parser from './parse_inputs';
-import tester from './test_factory';
+import dispatcher from './test_dispatcher';
 // import deploy from './deploy';
 
 export default class Contest {
@@ -18,8 +18,11 @@ export default class Contest {
     const setContract = this._setContract.bind(this);
     this.describe(contract.contract_name);
     this.it('', function () {
-      assert.ok(contract.address);
-      setContract(contract);
+      return new Promise((resolve) => {
+        assert.ok(contract.address);
+        setContract(contract);
+        resolve();
+      });
     });
     return this;
   }
@@ -43,7 +46,7 @@ export default class Contest {
     const { config } = this;
     const { type } = args[args.length - 1];
     const opts = parser(args, type);
-    const promise = tester({ ...opts, config, contract: this._getContract.bind(this) });
+    const promise = dispatcher({ ...opts, config, contract: this._getContract.bind(this) });
     this._addToQueue({ opts, promise });
     return this;
   }
@@ -63,7 +66,8 @@ export default class Contest {
     if (!actions.length) { return this; }
     global.describe(this.describeBlock, function () {
       actions.forEach((fn) => {
-        if (fn.promise) { fn.promise(); } else { fn(); }
+        if (fn.promise) { return null; }
+        return fn();
       });
     });
     return this;
@@ -84,7 +88,16 @@ export default class Contest {
   }
   _addCustomAction(statement, promise, type) {
     this._addToQueue({
-      promise: () => promise(this._getContract()),
+      promise: () => {
+        // resolve promise or promisify regular functions
+        return new Promise((resolve, reject) => {
+          const p = promise(this._getContract());
+          if (p && p.then) {
+            return p.then(resolve).catch(reject);
+          }
+          return resolve();
+        });
+      },
       opts: {
         statement,
         type,
@@ -93,27 +106,45 @@ export default class Contest {
   }
   // internal queue method
   _addToQueue({ opts, promise }) {
-    // deal with things that should be merged into preceeding test
-    if (opts.type === 'event' || opts.type === 'before') {
-      this._actionQueue.push({ promise, before: true, statement: opts.statement });
-    } else {
-      // replace last action if it is an event
-      const previousAction = this._actionQueue[this._actionQueue.length - 1] || {};
-      if (previousAction.before) {
-        // if the previous _actionQueue item is an event, pass it this test instead.
-        this._actionQueue[this._actionQueue.length - 1] = function () {
-          const previousStatement = previousAction.statement ? `${previousAction.statement} & ` : '';
-          global.it(`${previousStatement}${opts.statement}`, function () {
-            return previousAction.promise(promise);
-          });
-        };
-      } else {
-        // no previous events, just pass the promise
-        this._actionQueue.push(function () {
-          global.it(opts.statement, function () { return promise(); });
-        });
+    const { type, statement } = opts;
+    const eventObj = { promise, type, statement };
+    const previousAction = this._actionQueue[this._actionQueue.length - 1] || {};
+    if (previousAction.type === 'event' && eventObj.type !== 'transaction') {
+      throw new Error('`watch` must be followed by `tx`!');
+    }
+    if (previousAction.type === 'before') {
+      // previous action should can executed in series
+      eventObj.promise = (args) => {
+        return previousAction.promise().then(promise(args));
+      };
+      // if this item is an event or before, overwrite previous.
+      if (eventObj.type === 'before' || eventObj.type === 'event') {
+        this._actionQueue[this._actionQueue.length - 1] = eventObj;
+        return this;
       }
     }
+    // if we are before, but previous wasn't, push a new block
+    if (eventObj.type === 'before' || eventObj.type === 'event') {
+      // TODO do something if prev action is event?
+      this._actionQueue.push(eventObj);
+      return this;
+    }
+    // ensure events create an it statement
+    if (previousAction.type === 'event') {
+      this._actionQueue[this._actionQueue.length - 1] = function () {
+        global.it(`${previousAction.statement} & ${statement}`, function () {
+          return previousAction.promise(eventObj.promise);
+        });
+      };
+      return this;
+    }
+    // default action
+    this._actionQueue.push(function () {
+      global.it(statement, function () {
+        return eventObj.promise();
+      });
+    });
+
     return this;
   }
   // return current instance of contract
