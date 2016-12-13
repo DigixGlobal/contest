@@ -28,7 +28,6 @@ export default class Contest {
   }
   // or deploy a new one
   deploy(newContract, args = []) {
-    // let's deploy this bizatch
     const setContract = this._setContract.bind(this);
     this.describe(newContract.contract_name);
     this.it('deploys', function () {
@@ -38,6 +37,21 @@ export default class Contest {
         setContract(contract);
       })
       .catch(err => assert.ifError(err));
+    });
+    return this;
+  }
+  // or pluck deployed one from truffle's global namespace
+  deployed(contractName) {
+    if (!contractName || global[contractName]) { throw new Error('Contract not defined!'); }
+    const setContract = this._setContract.bind(this);
+    this.describe('Truffle deployment');
+    this.it('is deployed', function () {
+      return new Promise((resolve) => {
+        const contract = global[contractName].deployed();
+        assert.ok(contract.address);
+        setContract(contract);
+        resolve();
+      });
     });
     return this;
   }
