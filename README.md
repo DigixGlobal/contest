@@ -58,6 +58,20 @@ Once you have set a contract you can begin scripting against it:
   * `.then(promise)` return a promise or execute arbitrary code
   * `done()` end each chain with `done` to execute chain
 
+## Helpers
+
+Contest also includes some common test helpers related to Ethereum. See `./src/helpers.js` for details.
+
+* `BIG_INT` BigNumber string representing maximum (256 integer)
+* `BIG_INT_MINUS_TWO`
+* `ONE_DAY_IN_SECONDS`
+* `asyncIterator(iterator, fn, callback)`
+* `randomInt(min, max)`
+* `randomHex(length, prefix)` - (`prefix` bool adds `0x`)
+* `randomAddress(prefix)`
+
+Import them as such: `import { BIG_INT, randomHex } from '@digix/contest/src/helpers';`
+
 ## Example
 
 ```javascript

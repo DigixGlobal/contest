@@ -2,7 +2,6 @@ import assert from 'assert';
 
 import parser from './parse_inputs';
 import dispatcher from './test_dispatcher';
-// import deploy from './deploy';
 
 export default class Contest {
   constructor({ debug = false } = {}) {
