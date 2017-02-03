@@ -32,3 +32,11 @@ export function randomHex(len, prefix) {
 export function randomAddress(prefix) {
   return randomHex(40, prefix);
 }
+
+export function currentTimestamp() {
+  return parseInt(new Date().getTime() / 1000, 10);
+}
+
+export function randomTime(from) {
+  return from - (randomInt(0, 8035200));
+}
