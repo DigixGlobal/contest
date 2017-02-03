@@ -10,6 +10,18 @@ export default class Contest {
     this._actionQueue = [];
     return this;
   }
+  // for the new version of truffle....
+  artifact(truffleArtifact) {
+    const setContract = this._setContract.bind(this);
+    this.describe(`~~~ Contract: ${truffleArtifact.toJSON().contract_name} ~~~\n`);
+    this.it('is deployed', function () {
+      return truffleArtifact.deployed().then((instance) => {
+        assert.ok(instance.address);
+        setContract(instance);
+      });
+    });
+    return this;
+  }
   // uses already-deployed contract
   use(contract) {
     // if we pass the text we create an upper level describe block

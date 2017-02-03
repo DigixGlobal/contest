@@ -37,6 +37,7 @@ Each chain should end in `done` - see the example below for usage.
 Before calling methods, you must have a contract deployed:
 
 * Contract
+  * `.artifact(truffleArtifact)` for contracts deployed with truffle v3
   * `.deploy(contract, [ params ])` deploys a new instance of contract with given params
   * `.use(contractInstance)` use an existing instance of a an already-deployed contract
 
@@ -75,11 +76,10 @@ Import them as such: `import { BIG_INT, randomHex } from '@digix/contest/src/hel
 ## Example
 
 ```javascript
-const contest = new Contest({ debug: true });
+const MetaCoin = artifacts.require('./MetaCoin.sol');
 
-contest
-// use `deploy` or `use` to deploy a new contract
-.deploy(MetaCoin, [ 1000, {from: accounts[0] }])
+new Contest()
+.artifact(MetaCoin)
 // create a describe block to oragnise tests
 .describe('Account Balances')
 // pass an object to assert key/value paris for a method
@@ -103,8 +103,6 @@ contest
   [accounts[1], 10, { from: accounts[0] }],
   [accounts[0], 10, { from: accounts[1] }],
 })
-// switch to to an already-deployed contract with `use`
-.use(MetaCoin.deployed())
 .describe('Transfer balances')
 // listen for events with `watch`. it will match the outputs series with the next `tx` block
 .watch('Transfer', 'fires the events correctly', [
