@@ -4,8 +4,8 @@ import parser from './parse_inputs';
 import dispatcher from './test_dispatcher';
 
 export default class Contest {
-  constructor({ debug = false } = {}) {
-    this.config = { debug };
+  constructor({ debug = false, timeout } = {}) {
+    this.config = { debug, timeout };
     this._contract = null;
     this._actionQueue = [];
     return this;
@@ -162,10 +162,12 @@ export default class Contest {
       this._actionQueue.push(eventObj);
       return this;
     }
+    const { timeout } = this.config;
     // ensure events create an it statement
     if (previousAction.type === 'event') {
       this._actionQueue[this._actionQueue.length - 1] = function () {
         global.it(`${previousAction.statement} & ${statement}`, function () {
+          if (timeout) { this.timeout(timeout); }
           return previousAction.promise(eventObj.promise);
         });
       };
@@ -174,6 +176,7 @@ export default class Contest {
     // default action
     this._actionQueue.push(function () {
       global.it(statement, function () {
+        if (timeout) { this.timeout(timeout); }
         return eventObj.promise();
       });
     });

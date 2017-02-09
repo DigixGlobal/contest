@@ -21,11 +21,9 @@ You should be using truffle.
 npm install --save-dev @digix/contest
 ```
 
-Stick this at the top of `./tests/index.js` to use `contest` in your your tests.
-
 ```javascript
 import Contest from '@digix/contest';
-global.contest = new Contest({ debug: true }); // `debug` defaults to false
+const contest = new Contest({ debug: true, timeout: 2000 }); // `debug` defaults to false
 ```
 
 ## Usage
