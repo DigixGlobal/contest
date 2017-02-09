@@ -1,4 +1,5 @@
 import assert from 'assert';
+import Tempo from '@digix/tempo';
 
 import parser from './parse_inputs';
 import dispatcher from './test_dispatcher';
@@ -12,13 +13,10 @@ export default class Contest {
   }
   // for the new version of truffle....
   artifact(truffleArtifact) {
-    const setContract = this._setContract.bind(this);
+    const _init = this._init.bind(this);
     this.describe(`~~~ Contract: ${truffleArtifact.toJSON().contract_name} ~~~\n`);
     this.it('is deployed', function () {
-      return truffleArtifact.deployed().then((instance) => {
-        assert.ok(instance.address);
-        setContract(instance);
-      });
+      return truffleArtifact.deployed().then((instance) => _init(instance));
     });
     return this;
   }
@@ -26,43 +24,35 @@ export default class Contest {
   use(contract) {
     // if we pass the text we create an upper level describe block
     if (!contract) { throw new Error('Contract not defined!'); }
-    const setContract = this._setContract.bind(this);
+    const _init = this._init.bind(this);
     this.describe(contract.contract_name);
     this.it('', function () {
-      return new Promise((resolve) => {
-        assert.ok(contract.address);
-        setContract(contract);
-        resolve();
-      });
+      return _init(contract);
     });
     return this;
   }
   // or deploy a new one
   deploy(newContract, args = []) {
-    const setContract = this._setContract.bind(this);
+    const _init = this._init.bind(this);
     this.describe(newContract.contract_name);
     this.it('deploys', function () {
       return newContract.new.apply(newContract, args)
-      .then((contract) => {
-        assert.ok(contract.address);
-        setContract(contract);
-      })
-      .catch(err => assert.ifError(err));
+      .then((contract) => _init(contract));
     });
     return this;
   }
   // or pluck deployed one from truffle's global namespace
   deployed(contractName) {
     if (!contractName || global[contractName]) { throw new Error('Contract not defined!'); }
-    const setContract = this._setContract.bind(this);
+    const _init = this._init.bind(this);
     this.describe('Truffle deployment');
     this.it('is deployed', function () {
-      return new Promise((resolve) => {
-        const contract = global[contractName].deployed();
-        assert.ok(contract.address);
-        setContract(contract);
-        resolve();
-      });
+      const contract = global[contractName].deployed();
+      // backwards compatibility with old truffle version
+      if (contract.address) {
+        return _init(contract);
+      }
+      return contract.then((instance) => _init(instance));
     });
     return this;
   }
@@ -105,14 +95,32 @@ export default class Contest {
     this._addCustomAction({ promise, type: 'then', before: true });
     return this;
   }
-
+  wait(blocks, numberOfSeconds) {
+    return this.then(() => {
+      return new Promise((resolve) => {
+        if (this.config.debug) {
+          console.log(`Waiting ${blocks} blocks ${numberOfSeconds && `& ${numberOfSeconds} seconds`}`);
+        }
+        this.tempo.waitForBlocks(blocks, numberOfSeconds).then(resolve);
+      });
+    });
+  }
   // describe blocks set up a new `it` queue
   describe(statement) {
     this.done();
     this.describeBlock = statement;
     return this;
   }
-
+  _init(contract) {
+    return new Promise((resolve) => {
+      assert.ok(contract.address);
+      this._setContract(contract);
+      new Tempo(global.web3).then((instance) => {
+        this.tempo = instance;
+        resolve();
+      });
+    });
+  }
   _addCustomAction({ statement, promise, type, before }) {
     this._addToQueue({
       promise: () => {

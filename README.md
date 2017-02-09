@@ -52,10 +52,13 @@ Once you have set a contract you can begin scripting against it:
 * Events
   * `.watch(method, statement, samples)` the next block must be a `tx`, it will match each sample in samples
   * `sample` for `watch` is in the format `{ _param1: output1, _param2: output2 }`
+* Misc
+  `.wait(blocks, seconds)` alias for [tempo's waitForBlocks](https://github.com/DigixGlobal/tempo)
 * Test
   * `.describe(description)` new describe block; for organixation only
   * `.then(promise)` return a promise or execute arbitrary code
   * `done()` end each chain with `done` to execute chain
+
 
 ## Helpers
 
