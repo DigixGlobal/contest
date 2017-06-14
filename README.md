@@ -1,6 +1,6 @@
 # Contest
 
-*Unstable Alpha Release*
+☠️ Contest is now deprecated. We recommend using node 7.10 + and the `async` pattern.
 
 ### Web3 contract scripting and assertions
 
